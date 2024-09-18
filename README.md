@@ -17,7 +17,7 @@ https://www.loom.com/share/b81b80fac6134060b0a5cf246f490eef?sid=bdb4fd1b-4b9b-4e
 
 ## Встановлення чарта
 
-Впевнимось, що всі залежності встановлені згідно з `Charts.yaml`:
+Впевнимось, що всі залежності встановлені згідно з `Chart.yaml`:
 ```
 helm dependency update
 ```
