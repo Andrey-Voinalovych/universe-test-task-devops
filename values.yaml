@@ -44,19 +44,6 @@ victoria-metrics-cluster:
       prometheus.io/scrape: "true"
       prometheus.io/port: "8482"
 
-# vmagent:
-#   args:
-#     - '--promscrape.config=/etc/vmagent/config/guide-vmcluster-vmagent-values.yaml'
-#     - '--remoteWrite.url=http://vmcluster-victoria-metrics-cluster-vminsert.default.svc.cluster.local:8480/insert/0/prometheus/'
-#   extraVolumeMounts:
-#     - name: config-volume
-#       mountPath: /etc/vmagent/config/guide-vmcluster-vmagent-values.yaml
-#       subPath: guide-vmcluster-vmagent-values.yaml
-#   extraVolumes:
-#     - name: config-volume
-#       configMap:
-#         name: vmagent-config
-
 victoria-metrics-agent:
   remoteWriteUrls:
     - 'http://vmcluster-victoria-metrics-cluster-vminsert.default.svc.cluster.local:8480/insert/0/prometheus/'
