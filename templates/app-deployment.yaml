@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}-deployment
+spec:
+  replicas: {{  .Values.replicaCount  }}
+  selector:
+    matchLabels:
+      app: spam-app
+  template:
+    metadata:
+      labels:
+        app: spam-app
+    spec:
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: 
+          {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: {{.Values.image.containerPort}}
+        readinessProbe:
+          {{- toYaml .Values.readinessProbe | nindent 10 }}
+        livenessProbe:
+          {{- toYaml .Values.livenessProbe | nindent 10 }}
+

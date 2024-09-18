@@ -1,0 +1,10 @@
+Hi, Universe team! {{ .Release.Name }} chart is deploying.
+**********************************************************************************
+1. To retrieve the admin password for Grafana, run the following command:
+
+  kubectl get secret --namespace {{ .Release.Namespace }} {{ .Release.Name }}-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
+
+2. To get access to grafana panel use:
+
+  export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=grafana,app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}") &&
+  kubectl --namespace default port-forward $POD_NAME 3000

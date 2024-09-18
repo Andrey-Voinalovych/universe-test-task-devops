@@ -1,0 +1,20 @@
+apiVersion: v2
+name: vmcluster
+description: Test Task Middle DevOps Engineer for Universe Group
+
+type: application
+
+version: 0.1.0
+
+appVersion: "1.1394.355"
+
+dependencies:
+  - name: victoria-metrics-cluster
+    version: "0.13.7"
+    repository: "https://victoriametrics.github.io/helm-charts/"
+  - name: victoria-metrics-agent
+    version: "0.12.2"
+    repository: "https://victoriametrics.github.io/helm-charts/"
+  - name: grafana
+    version: "8.5.1"
+    repository: "https://grafana.github.io/helm-charts"

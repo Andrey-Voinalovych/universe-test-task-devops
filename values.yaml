@@ -1,0 +1,121 @@
+replicaCount: 1
+
+image:
+  repository: andriiuni/spam2000
+  pullPolicy: IfNotPresent
+  tag: ""
+  containerPort: 3000
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+Service:
+  type: ClusterIP
+  port: 3000
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 3000
+  initialDelaySeconds: 15
+  periodSeconds: 20
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 3000
+  initialDelaySeconds: 5
+  periodSeconds: 10
+
+victoria-metrics-cluster:
+  vmselect:
+    podAnnotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "8481"
+
+  vminsert:
+    podAnnotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "8480"
+
+  vmstorage:
+    podAnnotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "8482"
+
+# vmagent:
+#   args:
+#     - '--promscrape.config=/etc/vmagent/config/guide-vmcluster-vmagent-values.yaml'
+#     - '--remoteWrite.url=http://vmcluster-victoria-metrics-cluster-vminsert.default.svc.cluster.local:8480/insert/0/prometheus/'
+#   extraVolumeMounts:
+#     - name: config-volume
+#       mountPath: /etc/vmagent/config/guide-vmcluster-vmagent-values.yaml
+#       subPath: guide-vmcluster-vmagent-values.yaml
+#   extraVolumes:
+#     - name: config-volume
+#       configMap:
+#         name: vmagent-config
+
+victoria-metrics-agent:
+  remoteWriteUrls:
+    - 'http://vmcluster-victoria-metrics-cluster-vminsert.default.svc.cluster.local:8480/insert/0/prometheus/'
+  extraVolumes:
+    - name: config-volume
+      configMap:
+        name: vmagent-config
+  extraVolumeMounts:
+    - name: config-volume
+      mountPath: /etc/vmagent/config/guide-vmcluster-vmagent-values.yaml
+      subPath: guide-vmcluster-vmagent-values.yaml
+  configMap: "vmagent-config"
+  extraArgs:
+    promscrape.config: /etc/vmagent/config/guide-vmcluster-vmagent-values.yaml
+    promscrape.maxScrapeSize: 2GB
+    
+grafana:
+  
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - name: victoriametrics
+          type: prometheus
+          orgId: 1
+          url: http://vmcluster-victoria-metrics-cluster-vmselect.default.svc.cluster.local:8481/select/0/prometheus/
+          access: proxy
+          isDefault: true
+          updateIntervalSeconds: 10
+          editable: true
+
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: 'default'
+          orgId: 1
+          folder: ''
+          type: file
+          disableDeletion: true
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/default
+
+  dashboards:
+    default:
+      victoriametrics:
+        gnetId: 11176
+        revision: 18
+        datasource: victoriametrics
+      vmagent:
+        gnetId: 12683
+        revision: 7
+        datasource: victoriametrics
+      kubernetes:
+        gnetId: 14205
+        revision: 1
+        datasource: victoriametrics
+      spam-app-dashboard:
+        json: |
+          {{ .Files.Get "dashboards/default/spam-app-dashboard.json" }}
+
