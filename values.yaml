@@ -1,15 +1,17 @@
+# SECTION 1: Spam-App Application deployment values  
 replicaCount: 1
-
+# Public image provided in task
 image:
   repository: andriiuni/spam2000
   pullPolicy: IfNotPresent
   tag: ""
-  containerPort: 3000
+  containerPort: 3000 #Was derived from analyzing the layers of the resulting image  
 
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
+# Service for spam-app application. Target and service ports are the same and using .Values.Service.port
 Service:
   type: ClusterIP
   port: 3000
@@ -28,6 +30,10 @@ readinessProbe:
   initialDelaySeconds: 5
   periodSeconds: 10
 
+
+# SECTION 2: VM Cluster settings
+# The settings were specified according to the documentation and are required to allow data to be received from the VM cluster on specific ports.
+
 victoria-metrics-cluster:
   vmselect:
     podAnnotations:
@@ -44,6 +50,8 @@ victoria-metrics-cluster:
       prometheus.io/scrape: "true"
       prometheus.io/port: "8482"
 
+# SECTION 3: VM Agent settings
+# The settings for the agent take into account the use of ConfigMap to pass scrapeConfig. Also, the maxScrapeSize limit for the spam-app was increased because the log stream was exceeding the standard limit
 victoria-metrics-agent:
   remoteWriteUrls:
     - 'http://vmcluster-victoria-metrics-cluster-vminsert.default.svc.cluster.local:8480/insert/0/prometheus/'
@@ -59,9 +67,11 @@ victoria-metrics-agent:
   extraArgs:
     promscrape.config: /etc/vmagent/config/guide-vmcluster-vmagent-values.yaml
     promscrape.maxScrapeSize: 2GB
-    
+
+# SECTION 4: Grafana settings
+# Defining the default data source as vmselect, whose port was designated earlier in the file when defining the cluster settings.
+# Defining standard dashboards available publicly for cluster state monitoring and add json of our custom dashboard as well.
 grafana:
-  
   datasources:
     datasources.yaml:
       apiVersion: 1
